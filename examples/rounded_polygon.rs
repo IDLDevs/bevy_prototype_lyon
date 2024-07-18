@@ -4,7 +4,7 @@ use bevy_prototype_lyon::prelude::*;
 fn main() {
     App::new()
         .insert_resource(Msaa::Sample4)
-        .add_plugins((DefaultPlugins, ShapePlugin))
+        .add_plugins((DefaultPlugins, ShapePlugin::default()))
         .add_systems(Startup, setup_system)
         .run();
 }
