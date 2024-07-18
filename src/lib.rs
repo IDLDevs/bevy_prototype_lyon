@@ -33,6 +33,7 @@ pub mod shapes;
 mod utils;
 mod vertex;
 
+
 /// Import this module as `use bevy_prototype_lyon::prelude::*` to get
 /// convenient imports.
 pub mod prelude {
@@ -47,5 +48,6 @@ pub mod prelude {
         path::{PathBuilder, ShapePath},
         plugin::ShapePlugin,
         shapes::{self, RectangleOrigin, RegularPolygon, RegularPolygonFeature},
+        vertex::VertexBuffers,
     };
 }

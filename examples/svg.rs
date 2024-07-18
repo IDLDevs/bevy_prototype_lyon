@@ -5,8 +5,7 @@ fn main() {
     App::new()
         //Added msaa to reduce aliasing
         .insert_resource(Msaa::Sample4)
-        .add_plugins(DefaultPlugins)
-        .add_plugins(ShapePlugin)
+        .add_plugins((DefaultPlugins, ShapePlugin::default()))
         .add_systems(Startup, setup_system)
         .run();
 }

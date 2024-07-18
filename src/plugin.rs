@@ -26,17 +26,33 @@ use crate::{
 
 pub(crate) const COLOR_MATERIAL_HANDLE: Handle<ColorMaterial> =
     Handle::weak_from_u128(0x7CC6_61A1_0CD6_C147_129A_2C01_882D_9580);
-
+type VertexFunction  = fn(&VertexBuffers) -> Mesh;
+#[derive(Resource)]
+struct ShapePluginOptions {
+    vertex_mapper: VertexFunction,
+}
 /// A plugin that provides resources and a system to draw shapes in Bevy with
 /// less boilerplate.
-pub struct ShapePlugin;
-
+pub struct ShapePlugin {
+    /// Used to generate the Mesh upon computed the VertexBuffers
+    pub vertex_mapper: fn(&VertexBuffers) -> Mesh,
+}
+impl Default for ShapePlugin {
+    fn default() -> Self {
+        Self {
+            vertex_mapper: build_mesh,
+        }
+    }
+}
 impl Plugin for ShapePlugin {
     fn build(&self, app: &mut App) {
         let fill_tess = tess::FillTessellator::new();
         let stroke_tess = tess::StrokeTessellator::new();
         app.insert_resource(FillTessellator(fill_tess))
             .insert_resource(StrokeTessellator(stroke_tess))
+            .insert_resource(ShapePluginOptions {
+                vertex_mapper: self.vertex_mapper,
+            })
             .configure_sets(
                 PostUpdate,
                 BuildShapes.after(bevy::transform::TransformSystem::TransformPropagate),
@@ -69,6 +85,7 @@ fn mesh_shapes_system(
         (Option<&Fill>, Option<&Stroke>, &Path, &mut Mesh2dHandle),
         Or<(Changed<Path>, Changed<Fill>, Changed<Stroke>)>,
     >,
+    plugin_storage: Res<ShapePluginOptions>,
 ) {
     for (maybe_fill_mode, maybe_stroke_mode, path, mut mesh) in &mut query {
         let mut buffers = VertexBuffers::new();
@@ -89,8 +106,7 @@ fn mesh_shapes_system(
                 &mut buffers,
             );
         }
-
-        mesh.0 = meshes.add(build_mesh(&buffers));
+        mesh.0 = meshes.add((plugin_storage.vertex_mapper)(&buffers));
     }
 }
 
